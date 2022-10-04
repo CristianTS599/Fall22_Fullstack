@@ -24,7 +24,8 @@ const fizzbuzz = () => {
      }
      else {
        console.log(val);
-     }
+     } 
+     
   }
 };
 
