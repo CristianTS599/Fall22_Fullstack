@@ -9,8 +9,23 @@ Use console.log() to write the proper output to the command line.
 
 **/
 
+let val = 1;
 const fizzbuzz = () => {
   // Add your code here
+  for(val = 0; val < 101; ++val) {
+     if (val % 3 === 0 && val % 5 ===0) {
+       console.log("fizzbuzz");
+     }
+     else if (val % 5 ===0 && val % 3 !== 0) {
+       console.log("buzz");
+     }
+     else if (val % 3 === 0) {
+       console.log("fizz");
+     }
+     else {
+       console.log(val);
+     }
+  }
 };
 
 fizzbuzz();
