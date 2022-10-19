@@ -7,21 +7,31 @@ const url = "https://restcountries.com/v3.1/all";
 function getData(getUrl) {
   fetch(getUrl)
     .then((response) => {
-      return response.json();
+      if (response.ok) {
+        return response.json();
+      } else {
+        document.getElementById("ErrorLabel").value = "Failed To Call API";
+        document.getElementById("ErrorLabel").hidden = false;
+      }
     })
     .then((data) => {
       console.log(data);
-      let count = 1;
       data.forEach((country) => {
-        let item = `${count}. ${country.name.common} - ${country.population}`;
-        document.getElementById("results").append(`<li>${item}</li>`);
-        ++count;
+        let item = `${country.name.common} - ${new Intl.NumberFormat().format(
+          country.population
+        )}`;
+        let listItem = document.createElement("li");
+        listItem.appendChild(document.createTextNode(item));
+        document.querySelector("ol").append(listItem);
         console.log(
           `Country Name ${country.name.common} - Population ${country.population}`
         );
       });
     })
-    .catch((error) => console.log(error));
+    .catch((error) => {
+      document.getElementById("ErrorLabel").value = "Failed To Call API";
+      document.getElementById("ErrorLabel").hidden = false;
+    });
 }
 
 getData(url);
