@@ -1,22 +1,9 @@
-const { appendFile } = require("fs");
 const http = require("http");
-const express = require("express");
-const { runInNewContext } = require("vm");
-const { emit } = require("process");
-const app = express();
 const port = process.env.PORT || 5001;
 
 // http://localhost:5001/form should return a form with input elements for username, email, and submit button
 
 // http://localhost:5001/submit should return all the data the user entered
-
-//const server = http.createServer((req, res) => {
-//  if (req.method === "GET" && req.url === "/") {
-//    res.writeHead(200, { "Content-Type": "text/html" });
-//    res.write("Hello World");
-//    res.end();
-//  }
-//});
 
 const postHTML = `<html><head><title>Post Example</title></head><body>
   <form method='post' action="/submit" style="display:grid; width:400px">
@@ -67,14 +54,14 @@ const server = http.createServer((req, res) => {
         );
       }
     });
+
+    submitResponse = submitResponse.concat(
+      "",
+      `<div>NewsLetter: ${wantNews ? newsletter : noNewsletter}</div>`
+    );
     res.writeHead(200, { "Content-body": "text/html" });
     res.end(submitResponse);
   });
-  //  req.on("end", () => {
-  //    console.log("on end: " + body);
-  //    res.writeHead(200);
-  //    res.end(postHTML);
-  //  });
 });
 
 server.listen(port, () => {
