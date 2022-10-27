@@ -2,6 +2,7 @@ const { appendFile } = require("fs");
 const http = require("http");
 const express = require("express");
 const { runInNewContext } = require("vm");
+const { emit } = require("process");
 const app = express();
 const port = process.env.PORT || 5001;
 
@@ -18,17 +19,20 @@ const port = process.env.PORT || 5001;
 //});
 
 const postHTML = `<html><head><title>Post Example</title></head><body>
-  <form method='post' action="/submit">
-  <label for="name">Name: </label>
-  <input type="text" name="name" id="name"><br />
-  <label for="email">Email: </label>
-  <input type="text" name="email" id="email"><br />
+  <form method='post' action="/submit" style="display:grid; width:400px">
+  <label for="Name">Name: </label>
+  <input type="text" name="Name" id="Name"><br />
+  <label for="Email">Email: </label>
+  <input type="text" name="Email" id="Email"><br />
   <label for="Comments">Comments:</label>
-  <input type="text" name="Comments" id="Comments><br/>"
+  <textarea id="Comments" name="Comments"></textarea><br />
   <label for="Newsletter">NewsLetter</label>
   <input type="checkbox" name="Newsletter" id="Newsletter"><br/>
   <input type='submit'>
   </form></body></html>`;
+
+const newsletter = "Yes, sign me up for some news!";
+const noNewsletter = "No news for me.";
 
 const server = http.createServer((req, res) => {
   let body = "";
@@ -41,14 +45,31 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { "Content-Type": "text/html" });
     res.end(postHTML);
   } else if (req.url === "/submit") {
-    console.log(req.body);
-    res.writeHead(200);
-    res.end("Submit submitted");
+    console.log("Submit submitted");
   }
-  //  req.on("data", (chunk) => {
-  //    body += chunk;
-  //    console.log("on data: " + body);
-  //  });
+  req.on("data", (chunk) => {
+    body += chunk;
+    body = decodeURI(body);
+    let keyVals = body.split("&");
+    let submitResponse = "";
+
+    let wantNews = body.includes("Newsletter");
+
+    keyVals.forEach((key) => {
+      if (!key.includes("Newsletter")) {
+        submitResponse = submitResponse.concat(
+          "",
+          `<div>${key.split("=")[0]}: ${
+            key.indexOf("%40") > 1
+              ? key.split("=")[1].replace("%40", "@")
+              : key.split("=")[1]
+          }</div>`
+        );
+      }
+    });
+    res.writeHead(200, { "Content-body": "text/html" });
+    res.end(submitResponse);
+  });
   //  req.on("end", () => {
   //    console.log("on end: " + body);
   //    res.writeHead(200);
