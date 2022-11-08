@@ -1,5 +1,6 @@
 const express = require('express');
 const axios = require('axios');
+const { response } = require('express');
 
 const app = express();
 const port = process.env.PORT || 5001;
@@ -11,41 +12,58 @@ app.set('view engine', 'pug');
 // REST Countries URL
 const url = 'https://restcountries.com/v3.1/all';
 
-const GetAPIDataByFilter = (dataFilter) => {
+const GetAPIDataByFilter = async (dataFilter) => {
   let result = [];
 
-  axios.get(url).then((response) => {
-    let allCountries = Object.entries(response.data);
-    let localResult = [];
-    allCountries.forEach((country) => {
-      console.log(country[0]);
-      if (dataFilter === 'Capitals') {
-        localResult.push(`${country[1].name.common} - ${country[1].capital}`);
-      } else if (dataFilter === 'Popilous') {
-        if (country[1].population >= 50000000000) {
-          localResult.push(
-            `${country[1].name.common} - ${country[1].population}`
-          );
-        }
-      } else if (dataFilter === 'Regions') {
-      }
-
-      if (country[0] === '249') {
-        console.log('hello');
-        return localResult;
-      }
-      let atest = country[1];
-      let name = atest.name.common;
-    });
+  let apiResponse = await axios.get(url).then((countries) => {
+    return countries;
   });
+
+  Object.entries(apiResponse.data).forEach((country) => {
+    if (dataFilter === 'Capitals') {
+      result.push(`${country[1].name.common} - ${country[1].capital}`);
+    }
+  });
+
+  console.log(apiResponse);
+
+  //axios.get(url).then((response) => {
+  //  let allCountries = Object.entries(response.data);
+  //  let localResult = [];
+  //  allCountries.forEach((country) => {
+  //    console.log(country[0]);
+  //    if (dataFilter === 'Capitals') {
+  //      localResult.push(`${country[1].name.common} - ${country[1].capital}`);
+  //    } else if (dataFilter === 'Popilous') {
+  //      if (country[1].population >= 50000000000) {
+  //        localResult.push(
+  //          `${country[1].name.common} - ${country[1].population}`
+  //        );
+  //      }
+  //    } else if (dataFilter === 'Regions') {
+  //    }
+  //
+  //    if (country[0] === '249') {
+  //      console.log('hello');
+  //      return localResult;
+  //    }
+  //    let atest = country[1];
+  //    let name = atest.name.common;
+  //  });
+  //});
+  return result;
+};
+
+const getData = async () => {
+  let result = await GetAPIDataByFilter('Capitals');
+  console.log(result);
   return result;
 };
 
 // Add your code here
-
 app.get('/', (req, res) => {
   // render pug template for the index.html file
-  let result = GetAPIDataByFilter('Capitals');
+
   res.render('index', {
     heading: 'Countries of the World',
     main: 'Welcome to this application. Using the REST Countries API, we will be showing the countries and capitals of the world, the most populous countries in the world, and the number of countries in each region of the world',
@@ -55,12 +73,25 @@ app.get('/', (req, res) => {
 app.get('/capitals', (req, res) => {
   // map the output array to create an array with country names and capitals
   // check for empty data in the output array
+  //let countries = ['Afghanistan', 'Aland Islands', 'Albania'];
 
-  let countries = ['Afghanistan', 'Aland Islands', 'Albania'];
+  axios.get(url).then((response) => {
+    let allCountries = Object.entries(response.data);
+    let localResult = [];
 
-  res.render('page', {
-    heading: 'Countries and Capitals',
-    results: countries,
+    allCountries.forEach((country) => {
+      console.log(country[0]);
+
+      localResult.push(`${country[1].name.common} - ${country[1].capital}`);
+
+      if (country[0] === '249') {
+        localResult.sort();
+        res.render('page', {
+          heading: 'Countries and Capitals',
+          results: localResult,
+        });
+      }
+    });
   });
 });
 
@@ -68,12 +99,31 @@ app.get('/populous', (req, res) => {
   // filter the output array for the countries with population of 50 million or more
   // sort the resulting array to show the results in order of population
   // map the resulting array into a new array with the country name and formatted population
+  axios.get(url).then((response) => {
+    let allCountries = Object.entries(response.data);
+    let localResult = [];
 
-  let populous = ['China', 'India', 'United States of America'];
+    allCountries.forEach((country) => {
+      console.log(country[0]);
 
-  res.render('page', {
-    heading: 'Most Populous Countries',
-    results: populous,
+      if (country[1].population >= 50000000)
+        localResult.push({
+          name: country[1].name.common,
+          pop: country[1].population,
+        });
+
+      if (country[0] === '249') {
+        let sortedResult = [];
+        localResult.sort((x, y) => x.pop - y.pop);
+        localResult.forEach((ctry) =>
+          sortedResult.push(`${ctry.name} - ${ctry.pop}`)
+        );
+        res.render('page', {
+          heading: 'Most Populous Countries',
+          results: sortedResult,
+        });
+      }
+    });
   });
 });
 
