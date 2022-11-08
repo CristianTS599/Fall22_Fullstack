@@ -73,22 +73,19 @@ app.get('/', (req, res) => {
 app.get('/capitals', (req, res) => {
   // map the output array to create an array with country names and capitals
   // check for empty data in the output array
-  //let countries = ['Afghanistan', 'Aland Islands', 'Albania'];
 
   axios.get(url).then((response) => {
-    let allCountries = Object.entries(response.data);
-    let localResult = [];
+    //let allCountries = Object.entries(response.data);
+    let result = [];
 
-    allCountries.forEach((country) => {
-      console.log(country[0]);
+    Object.entries(response.data).forEach((country) => {
+      result.push(`${country[1].name.common} - ${country[1].capital}`);
 
-      localResult.push(`${country[1].name.common} - ${country[1].capital}`);
-
-      if (country[0] === '249') {
-        localResult.sort();
+      if (country[0] === (response.data.length - 1).toString()) {
+        result.sort();
         res.render('page', {
           heading: 'Countries and Capitals',
-          results: localResult,
+          results: result,
         });
       }
     });
@@ -112,11 +109,13 @@ app.get('/populous', (req, res) => {
           pop: country[1].population,
         });
 
-      if (country[0] === '249') {
+      if (country[0] === (response.data.length - 1).toString()) {
         let sortedResult = [];
         localResult.sort((x, y) => x.pop - y.pop);
         localResult.forEach((ctry) =>
-          sortedResult.push(`${ctry.name} - ${ctry.pop}`)
+          sortedResult.push(
+            `${ctry.name} - ${new Intl.NumberFormat().format(ctry.pop)}`
+          )
         );
         res.render('page', {
           heading: 'Most Populous Countries',
@@ -131,11 +130,35 @@ app.get('/regions', (req, res) => {
   // reduce the output array in a resulting object that will feature the numbers of countries in each region
   // disregard empty data from the output array
 
-  let regions = ['Asia - 50', 'Europe - 53', 'Africa - 60'];
+  axios.get(url).then((response) => {
+    let allCountries = Object.entries(response.data);
+    let localResult = [];
 
-  res.render('page', {
-    heading: 'Regions of the World',
-    results: regions,
+    allCountries.forEach((country) => {
+      console.log(country[0]);
+
+      let alreadyExists = localResult.findIndex(
+        (ctry) => ctry.region === country[1].region
+      );
+      if (alreadyExists > -1) {
+        localResult[alreadyExists].count += 1;
+      } else {
+        localResult.push({ region: country[1].region, count: 1 });
+      }
+      if (country[0] === (response.data.length - 1).toString()) {
+        let sortedResult = [];
+
+        localResult.forEach((ctry) =>
+          sortedResult.push(`${ctry.region} - ${ctry.count}`)
+        );
+
+        sortedResult.sort();
+        res.render('page', {
+          heading: 'Regions of the World',
+          results: sortedResult,
+        });
+      }
+    });
   });
 });
 
