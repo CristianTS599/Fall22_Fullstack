@@ -11,11 +11,41 @@ app.set('view engine', 'pug');
 // REST Countries URL
 const url = 'https://restcountries.com/v3.1/all';
 
+const GetAPIDataByFilter = (dataFilter) => {
+  let result = [];
+
+  axios.get(url).then((response) => {
+    let allCountries = Object.entries(response.data);
+    let localResult = [];
+    allCountries.forEach((country) => {
+      console.log(country[0]);
+      if (dataFilter === 'Capitals') {
+        localResult.push(`${country[1].name.common} - ${country[1].capital}`);
+      } else if (dataFilter === 'Popilous') {
+        if (country[1].population >= 50000000000) {
+          localResult.push(
+            `${country[1].name.common} - ${country[1].population}`
+          );
+        }
+      } else if (dataFilter === 'Regions') {
+      }
+
+      if (country[0] === '249') {
+        console.log('hello');
+        return localResult;
+      }
+      let atest = country[1];
+      let name = atest.name.common;
+    });
+  });
+  return result;
+};
+
 // Add your code here
 
 app.get('/', (req, res) => {
   // render pug template for the index.html file
-
+  let result = GetAPIDataByFilter('Capitals');
   res.render('index', {
     heading: 'Countries of the World',
     main: 'Welcome to this application. Using the REST Countries API, we will be showing the countries and capitals of the world, the most populous countries in the world, and the number of countries in each region of the world',
